@@ -14,8 +14,9 @@ const router = express.Router()
 
 router.get("/", async (req, res) => {
   const offers = await Offer.find()
-  .select("-__v")
+    .select("-__v")
     .populate("categorys")
+    .populate("owner")
     .populate({
       path: "comments",
       populate: {
@@ -48,7 +49,7 @@ router.get("/:id", checkId, async (req, res) => {
 
 router.post("/", checkToken, validateBody(offerAddJoi), async (req, res) => {
   try {
-    const { title, description, photo, phoneNumber,price , categorys } = req.body
+    const { title, description, photo, phoneNumber, price, categorys } = req.body
 
     const categorysSet = new Set(categorys)
     if (categorysSet.size < categorys.length) return res.status(400).send("threr is a duplicated category")
@@ -74,7 +75,7 @@ router.post("/", checkToken, validateBody(offerAddJoi), async (req, res) => {
 
 router.put("/:id", checkToken, checkId, validateBody(offerEditJoi), async (req, res) => {
   try {
-    const { title, description, photo, phoneNumber,price , categorys } = req.body
+    const { title, description, photo, phoneNumber, price, categorys } = req.body
 
     const offerfound = await Offer.findById(req.params.id)
     if (!offerfound) return res.status(404).send("offer not found")
@@ -90,7 +91,7 @@ router.put("/:id", checkToken, checkId, validateBody(offerEditJoi), async (req, 
 
     const offer = await Offer.findByIdAndUpdate(
       req.params.id,
-      { $set: { title, description, photo, phoneNumber,price , categorys } },
+      { $set: { title, description, photo, phoneNumber, price, categorys } },
       { new: true }
     )
     if (!offer) return res.status(404).send("offer not found")
@@ -104,7 +105,7 @@ router.put("/:id", checkToken, checkId, validateBody(offerEditJoi), async (req, 
 
 router.delete("/:id", checkToken, checkId, async (req, res) => {
   try {
-       const offerfound = await Offer.findById(req.params.id)
+    const offerfound = await Offer.findById(req.params.id)
     if (!offerfound) return res.status(404).send("offer not found")
 
     // if (offer.owner != req.userId) return res.status(403).send("unauthorized action")

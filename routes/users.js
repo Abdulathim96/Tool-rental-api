@@ -7,10 +7,12 @@ const checkToken = require("../middleware/checkToken")
 const checkAdmin = require("../middleware/checkAdmin")
 const validateBody = require("../middleware/validateBody")
 const checkId = require("../middleware/checkId")
+const { Comment } = require("../models/Comment")
+const { Offer } = require("../models/Offer")
 
 router.post("/signup", validateBody(signupJoi), async (req, res) => {
   try {
-    const { firstName, lastName, email, phoneNumber , password, avatar } = req.body
+    const { firstName, lastName, email, phoneNumber, password, avatar } = req.body
 
     const userFound = await User.findOne({ email })
     if (userFound) return res.status(400).send("user already registered")
@@ -40,7 +42,7 @@ router.post("/signup", validateBody(signupJoi), async (req, res) => {
 
 router.post("/add-admin", checkAdmin, validateBody(signupJoi), async (req, res) => {
   try {
-    const { firstName, lastName, email,phoneNumber , password, avatar } = req.body
+    const { firstName, lastName, email, phoneNumber, password, avatar } = req.body
 
     const userFound = await User.findOne({ email })
     if (userFound) return res.status(400).send("user already registered")
@@ -82,7 +84,8 @@ router.delete("/users/:id", checkAdmin, checkId, async (req, res) => {
 
     await User.findByIdAndRemove(req.params.id)
 
-    // await Comment.deleteMany({ owner: req.params.id })
+    await Comment.deleteMany({ owner: req.params.id })
+    await Offer.deleteMany({ owner: req.params.id })
 
     res.send("user is deleted")
   } catch (error) {
@@ -150,4 +153,4 @@ router.put("/profile", checkToken, validateBody(profileJoi), async (req, res) =>
   res.json(user)
 })
 
-module.exports=router
+module.exports = router
