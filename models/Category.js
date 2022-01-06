@@ -3,6 +3,12 @@ const Joi = require("joi")
 
 const categorySchema = new mongoose.Schema({
   name: String,
+  subCategories: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "SubCategory",
+    },
+  ],
 })
 const categoryJoi = Joi.object({
   name: Joi.string().min(3).max(1000).required(),
