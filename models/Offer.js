@@ -6,7 +6,7 @@ const offerSchema = new mongoose.Schema({
   description: String,
   photo: String,
   phoneNumber: String,
-  price: Number,
+  price: String,
   owner: {
     type: mongoose.Types.ObjectId,
     ref: "User",
@@ -30,7 +30,7 @@ const offerAddJoi = Joi.object({
   description: Joi.string().min(5).max(1000).required(),
   photo: Joi.string().uri().min(5).max(1000).required(),
   phoneNumber: Joi.string().min(10),
-  price: Joi.number().min(1),
+  price: Joi.string().alphanum().min(1),
   categorys: Joi.array().items(Joi.objectid()).min(1),
 })
 
@@ -39,7 +39,7 @@ const offerEditJoi = Joi.object({
   description: Joi.string().min(5).max(1000),
   photo: Joi.string().uri().min(5).max(1000),
   phoneNumber: Joi.string().min(10),
-  price: Joi.number().min(1),
+  price: Joi.string().alphanum().min(1),
   categorys: Joi.array().items(Joi.objectid()).min(1),
 })
 
