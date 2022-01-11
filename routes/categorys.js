@@ -1,14 +1,16 @@
 const express = require("express")
 const checkAdmin = require("../middleware/checkAdmin")
 const checkId = require("../middleware/checkId")
+
 const validateBody = require("../middleware/validateBody")
+const validateId = require("../middleware/validateId")
 const { Category, categoryJoi } = require("../models/Category")
-const { SubCategory, supcategoryJoi } = require("../models/Comment")
+const { SubCategory, supcategoryJoi, subcategoryJoi } = require("../models/SubCategory")
 
 const router = express.Router()
 
 router.get("/", async (req, res) => {
-  const categorys = await Category.find().select("-__v").populate("subCategorys")
+  const categorys = await Category.find().select("-__v").populate("subCategories")
   res.json(categorys)
 })
 
@@ -52,88 +54,82 @@ router.delete("/:id", checkAdmin, checkId, async (req, res) => {
 
 // subCategory
 
-// /* SubCategorys */
+router.post(
+  "/:categoryId/subCategory",
+  checkAdmin,
+  validateId("categoryId"),
+  validateBody(subcategoryJoi),
+  async (req, res) => {
+    try {
+      const { name } = req.body
 
-// router.get("/:categoryId/subCategory", validateId("categoryId"), async (req, res) => {
-//   try {
-//     const category = await Category.findById(req.params.categoryId)
-//     if (!category) return res.status(404).send("category not found")
+      const category = await Category.findById(req.params.categoryId)
+      if (!category) return res.status(404).send("category not found")
 
-//     const subCategory = await SubCategory.find({ categoryId: req.params.categoryId })
-//     res.json(subCategory)
-//   } catch (error) {
-//     console.log(error)
-//     res.status(500).send(error.message)
-//   }
-// })
+      const newSubCategory = new SubCategory({ name, category: req.params.categoryId })
 
-// router.post("/:categoryId/subCategory", checkToken, validateId("categoryId"), validateBody(subCategoryJoi), async (req, res) => {
-//   try {
-//     const { subCategory } = req.body
+      await Category.findByIdAndUpdate(req.params.categoryId, { $push: { subCategories: newSubCategory._id } })
 
-//     const category = await Category.findById(req.params.categoryId)
-//     if (!category) return res.status(404).send("category not found")
+      await newSubCategory.save()
 
-//     const newSubCategory = new SubCategory({ subCategory, /*owner: req.userId*/ categoryId: req.params.categoryId })
+      res.json(newSubCategory)
+    } catch (error) {
+      console.log(error)
+      res.status(500).send(error.message)
+    }
+  }
+)
 
-//     await Category.findByIdAndUpdate(req.params.categoryId, { $push: { subCategory: newSubCategory._id } })
+router.put(
+  "/:categoryId/subCategory/:subCategoryId",
+  checkAdmin,
+  validateId("categoryId", "subCategoryId"),
+  validateBody(subcategoryJoi),
+  async (req, res) => {
+    try {
+      const category = await Category.findById(req.params.categoryId)
+      if (!category) return res.status(404).send("category not found")
+      const { name } = req.body
 
-//     await newSubCategory.save()
+      const subCategoryFound = await SubCategory.findById(req.params.subCategoryId)
+      if (!subCategoryFound) return res.status(404).send("subCategory not found")
 
-//     res.json(newSubCategory)
-//   } catch (error) {
-//     console.log(error)
-//     res.status(500).send(error.message)
-//   }
-// })
+      const updatedSubCategory = await SubCategory.findByIdAndUpdate(
+        req.params.subCategoryId,
+        { $set: { name } },
+        { new: true }
+      )
 
-// router.put(
-//   "/:categoryId/subCategory/:subCategoryId",
-//   checkToken,
-//   validateId("categoryId", "subCategoryId"),
-//   validateBody(subCategoryJoi),
-//   async (req, res) => {
-//     try {
-//       const category = await Category.findById(req.params.categoryId)
-//       if (!category) return res.status(404).send("category not found")
-//       const { subCategory } = req.body
+      res.json(updatedSubCategory)
+    } catch (error) {
+      console.log(error)
+      res.status(500).send(error.message)
+    }
+  }
+)
 
-//       const subCategoryFound = await SubCategory.findById(req.params.subCategoryId)
-//       if (!subCategoryFound) return res.status(404).send("subCategory not found")
+router.delete(
+  "/:categoryId/subCategory/:subCategoryId",
+  checkAdmin,
+  validateId("categoryId", "subCategoryId"),
+  async (req, res) => {
+    try {
+      const category = await Category.findById(req.params.categoryId)
+      if (!category) return res.status(404).send("category not found")
 
-//       // if (subCategoryFound.owner != req.userId) return res.status(403).send("unauthorized action")
+      const subCategoryFound = await SubCategory.findById(req.params.subCategoryId)
+      if (!subCategoryFound) return res.status(404).send("subCategory not found")
 
-//       const updatedSubCategory = await SubCategory.findByIdAndUpdate(req.params.subCategoryId, { $set: { subCategory } }, { new: true })
+      await Category.findByIdAndUpdate(req.params.categoryId, { $pull: { subCategory: subCategoryFound._id } })
 
-//       res.json(updatedSubCategory)
-//     } catch (error) {
-//       console.log(error)
-//       res.status(500).send(error.message)
-//     }
-//   }
-// )
+      await SubCategory.findByIdAndRemove(req.params.subCategoryId)
 
-// router.delete("/:categoryId/subCategory/:subCategoryId", checkToken, validateId("categoryId", "subCategoryId"), async (req, res) => {
-//   try {
-//     const category = await Category.findById(req.params.categoryId)
-//     if (!category) return res.status(404).send("category not found")
-
-//     const subCategoryFound = await SubCategory.findById(req.params.subCategoryId)
-//     if (!subCategoryFound) return res.status(404).send("subCategory not found")
-
-//     // const user = await User.findById(req.userId)
-
-//     // if (subCategoryFound.owner != req.userId) return res.status(403).send("unauthorized action")
-
-//     await Category.findByIdAndUpdate(req.params.categoryId, { $pull: { subCategory: subCategoryFound._id } })
-
-//     await SubCategory.findByIdAndRemove(req.params.subCategoryId)
-
-//     res.send("subCategory is removed")
-//   } catch (error) {
-//     console.log(error)
-//     res.status(500).send(error.message)
-//   }
-// })
+      res.send("subCategory is removed")
+    } catch (error) {
+      console.log(error)
+      res.status(500).send(error.message)
+    }
+  }
+)
 
 module.exports = router

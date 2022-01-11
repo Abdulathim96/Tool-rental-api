@@ -7,6 +7,7 @@ const offerSchema = new mongoose.Schema({
   photo: String,
   phoneNumber: String,
   price: String,
+  available:Boolean,
   owner: {
     type: mongoose.Types.ObjectId,
     ref: "User",
@@ -23,6 +24,12 @@ const offerSchema = new mongoose.Schema({
       ref: "Category",
     },
   ],
+  subCategories: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "SubCategory",
+    },
+  ],
 })
 
 const offerAddJoi = Joi.object({
@@ -32,6 +39,8 @@ const offerAddJoi = Joi.object({
   phoneNumber: Joi.string().min(10),
   price: Joi.string().alphanum().min(1),
   categorys: Joi.array().items(Joi.objectid()).min(1),
+  subCategories: Joi.array().items(Joi.objectid()).min(1),
+  available:Joi.boolean(),
 })
 
 const offerEditJoi = Joi.object({
@@ -41,6 +50,8 @@ const offerEditJoi = Joi.object({
   phoneNumber: Joi.string().min(10),
   price: Joi.string().alphanum().min(1),
   categorys: Joi.array().items(Joi.objectid()).min(1),
+  subCategories: Joi.array().items(Joi.objectid()).min(1),
+  available:Joi.boolean(),
 })
 
 const Offer = mongoose.model("Offer", offerSchema)

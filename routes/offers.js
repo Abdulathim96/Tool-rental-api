@@ -49,7 +49,7 @@ router.get("/:id", checkId, async (req, res) => {
 
 router.post("/", checkToken, validateBody(offerAddJoi), async (req, res) => {
   try {
-    const { title, description, photo, phoneNumber, price, categorys } = req.body
+    const { title, description, photo, phoneNumber, price, categorys,subCategories,available } = req.body
 
     const categorysSet = new Set(categorys)
     if (categorysSet.size < categorys.length) return res.status(400).send("threr is a duplicated category")
@@ -64,6 +64,8 @@ router.post("/", checkToken, validateBody(offerAddJoi), async (req, res) => {
       price,
       owner: req.userId,
       categorys,
+      subCategories,
+      available,
     })
     await offer.save()
     res.json(offer)
@@ -75,7 +77,7 @@ router.post("/", checkToken, validateBody(offerAddJoi), async (req, res) => {
 
 router.put("/:id", checkToken, checkId, validateBody(offerEditJoi), async (req, res) => {
   try {
-    const { title, description, photo, phoneNumber, price, categorys } = req.body
+    const { title, description, photo, phoneNumber, price, categorys, subCategories , available } = req.body
 
     const offerfound = await Offer.findById(req.params.id)
     if (!offerfound) return res.status(404).send("offer not found")
@@ -91,7 +93,7 @@ router.put("/:id", checkToken, checkId, validateBody(offerEditJoi), async (req, 
 
     const offer = await Offer.findByIdAndUpdate(
       req.params.id,
-      { $set: { title, description, photo, phoneNumber, price, categorys } },
+      { $set: { title, description, photo, phoneNumber, price, categorys, subCategories , available } },
       { new: true }
     )
     if (!offer) return res.status(404).send("offer not found")
