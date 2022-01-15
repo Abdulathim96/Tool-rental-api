@@ -10,10 +10,10 @@ const requestSchema = new mongoose.Schema({
     type: mongoose.Types.ObjectId,
     ref: "User",
   },
-  comments: [
+  requestcomments: [
     {
       type: mongoose.Types.ObjectId,
-      ref: "Comment",
+      ref: "RequestComment",
     },
   ],
   categorys: [

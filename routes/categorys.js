@@ -5,12 +5,17 @@ const checkId = require("../middleware/checkId")
 const validateBody = require("../middleware/validateBody")
 const validateId = require("../middleware/validateId")
 const { Category, categoryJoi } = require("../models/Category")
-const { SubCategory, supcategoryJoi, subcategoryJoi } = require("../models/SubCategory")
+const { SubCategory, subcategoryJoi } = require("../models/SubCategory")
 
 const router = express.Router()
 
 router.get("/", async (req, res) => {
   const categorys = await Category.find().select("-__v").populate("subCategories")
+  res.json(categorys)
+})
+
+router.get("/subCategories", async (req, res) => {
+  const categorys = await SubCategory.find().select("-__v").populate("category")
   res.json(categorys)
 })
 
@@ -53,6 +58,19 @@ router.delete("/:id", checkAdmin, checkId, async (req, res) => {
 })
 
 // subCategory
+
+router.get("/:categoryId/subCategory", validateId("categoryId"), async (req, res) => {
+  try {
+    const category = await Offer.findById(req.params.categoryId)
+    if (!category) return res.status(404).send("category not found")
+
+    const subCategory = await SubCategory.find({ categoryId: req.params.categoryId })
+    res.json(subCategory)
+  } catch (error) {
+    console.log(error)
+    res.status(500).send(error.message)
+  }
+})
 
 router.post(
   "/:categoryId/subCategory",

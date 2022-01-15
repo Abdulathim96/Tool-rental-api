@@ -4,7 +4,7 @@ const checkId = require("../middleware/checkId")
 const checkToken = require("../middleware/checkToken")
 const validateBody = require("../middleware/validateBody")
 const validateId = require("../middleware/validateId")
-const { Comment, commentJoi } = require("../models/Comment")
+const { RequestComment, requestCommentJoi } = require("../models/RequestComment")
 const { Request, requestAddJoi, requestEditJoi } = require("../models/Request")
 const { User } = require("../models/User")
 const { Category } = require("../models/Category")
@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
     .select("-__v")
     .populate("categorys")
     .populate({
-      path: "comments",
+      path: "requestcomments",
       populate: {
         path: "owner",
         select: "-password -email -role",
@@ -31,7 +31,7 @@ router.get("/:id", checkId, async (req, res) => {
     const request = await Request.findById(req.params.id)
       .populate("categorys")
       .populate({
-        path: "comments",
+        path: "requestcomments",
         populate: {
           path: "owner",
           select: "-__v -password -email -role",
@@ -118,60 +118,46 @@ router.delete("/:id", checkToken, checkId, async (req, res) => {
   }
 })
 
-/* Comments */
+/* RequestComment */
 
-router.get("/:requestId/comments", validateId("requestId"), async (req, res) => {
+router.get("/:requestId/requestComments", validateId("requestId"), async (req, res) => {
   try {
     const request = await Request.findById(req.params.requestId)
     if (!request) return res.status(404).send("request not found")
 
-    const comments = await Comment.find({ requestId: req.params.requestId })
-    res.json(comments)
+    const requestRequestComments = await RequestComment.find({ requestId: req.params.requestId })
+    res.json(requestRequestComments)
   } catch (error) {
     console.log(error)
     res.status(500).send(error.message)
   }
 })
 
-router.post("/:requestId/comments", checkToken, validateId("requestId"), validateBody(commentJoi), async (req, res) => {
-  try {
-    const { comment } = req.body
-
-    const request = await Request.findById(req.params.requestId)
-    if (!request) return res.status(404).send("request not found")
-
-    const newComment = new Comment({ comment, owner: req.userId, requestId: req.params.requestId })
-
-    await Request.findByIdAndUpdate(req.params.requestId, { $push: { comments: newComment._id } })
-
-    await newComment.save()
-
-    res.json(newComment)
-  } catch (error) {
-    console.log(error)
-    res.status(500).send(error.message)
-  }
-})
-
-router.put(
-  "/:requestId/comments/:commentId",
+router.post(
+  "/:requestId/requestRequestComments",
   checkToken,
-  validateId("requestId", "commentId"),
-  validateBody(commentJoi),
+  validateId("requestId"),
+  validateBody(requestCommentJoi),
   async (req, res) => {
     try {
+      const { requestComment } = req.body
+
       const request = await Request.findById(req.params.requestId)
       if (!request) return res.status(404).send("request not found")
-      const { comment } = req.body
 
-      const commentFound = await Comment.findById(req.params.commentId)
-      if (!commentFound) return res.status(404).send("comment not found")
+      const newRequestComment = new RequestComment({
+        requestComment,
+        owner: req.userId,
+        requestId: req.params.requestId,
+      })
 
-      if (commentFound.owner != req.userId) return res.status(403).send("unauthorized action")
+      await Request.findByIdAndUpdate(req.params.requestId, {
+        $push: { requestRequestComments: newRequestComment._id },
+      })
 
-      const updatedComment = await Comment.findByIdAndUpdate(req.params.commentId, { $set: { comment } }, { new: true })
+      await newRequestComment.save()
 
-      res.json(updatedComment)
+      res.json(newRequestComment)
     } catch (error) {
       console.log(error)
       res.status(500).send(error.message)
@@ -179,27 +165,64 @@ router.put(
   }
 )
 
-router.delete("/:requestId/comments/:commentId", checkToken, validateId("requestId", "commentId"), async (req, res) => {
-  try {
-    const request = await Request.findById(req.params.requestId)
-    if (!request) return res.status(404).send("request not found")
+router.put(
+  "/:requestId/requestRequestComments/:requestCommentId",
+  checkToken,
+  validateId("requestId", "requestCommentId"),
+  validateBody(requestCommentJoi),
+  async (req, res) => {
+    try {
+      const request = await Request.findById(req.params.requestId)
+      if (!request) return res.status(404).send("request not found")
+      const { requestComment } = req.body
 
-    const commentFound = await Comment.findById(req.params.commentId)
-    if (!commentFound) return res.status(404).send("comment not found")
+      const requestCommentFound = await RequestComment.findById(req.params.requestCommentId)
+      if (!requestCommentFound) return res.status(404).send("requestComment not found")
 
-    const user = await User.findById(req.userId)
+      if (requestCommentFound.owner != req.userId) return res.status(403).send("unauthorized action")
 
-    if (commentFound.owner != req.userId) return res.status(403).send("unauthorized action")
+      const updatedRequestComment = await RequestComment.findByIdAndUpdate(
+        req.params.requestCommentId,
+        { $set: { requestComment } },
+        { new: true }
+      )
 
-    await Request.findByIdAndUpdate(req.params.requestId, { $pull: { comments: commentFound._id } })
-
-    await Comment.findByIdAndRemove(req.params.commentId)
-
-    res.send("comment is removed")
-  } catch (error) {
-    console.log(error)
-    res.status(500).send(error.message)
+      res.json(updatedRequestComment)
+    } catch (error) {
+      console.log(error)
+      res.status(500).send(error.message)
+    }
   }
-})
+)
+
+router.delete(
+  "/:requestId/requestRequestComments/:requestCommentId",
+  checkToken,
+  validateId("requestId", "requestCommentId"),
+  async (req, res) => {
+    try {
+      const request = await Request.findById(req.params.requestId)
+      if (!request) return res.status(404).send("request not found")
+
+      const requestCommentFound = await RequestComment.findById(req.params.requestCommentId)
+      if (!requestCommentFound) return res.status(404).send("requestComment not found")
+
+      const user = await User.findById(req.userId)
+
+      if (requestCommentFound.owner != req.userId) return res.status(403).send("unauthorized action")
+
+      await Request.findByIdAndUpdate(req.params.requestId, {
+        $pull: { requestRequestComments: requestCommentFound._id },
+      })
+
+      await RequestComment.findByIdAndRemove(req.params.requestCommentId)
+
+      res.send("requestComment is removed")
+    } catch (error) {
+      console.log(error)
+      res.status(500).send(error.message)
+    }
+  }
+)
 
 module.exports = router
