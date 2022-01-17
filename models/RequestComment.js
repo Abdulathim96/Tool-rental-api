@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 const Joi = require("joi")
 
 const requestcommentSchema = new mongoose.Schema({
-  requestComment: String,
+  requestcomment: String,
   requestId: {
     type: mongoose.Types.ObjectId,
     ref: "Request",

@@ -7,7 +7,10 @@ const offerSchema = new mongoose.Schema({
   photo: String,
   phoneNumber: String,
   price: String,
-  available:Boolean,
+  available:{
+    type : Boolean,
+    default : true,
+  },
   owner: {
     type: mongoose.Types.ObjectId,
     ref: "User",

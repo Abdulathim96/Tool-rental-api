@@ -134,19 +134,19 @@ router.get("/:requestId/requestComments", validateId("requestId"), async (req, r
 })
 
 router.post(
-  "/:requestId/requestRequestComments",
+  "/:requestId/requestComments",
   checkToken,
   validateId("requestId"),
   validateBody(requestCommentJoi),
   async (req, res) => {
     try {
-      const { requestComment } = req.body
+      const { requestcomment } = req.body
 
       const request = await Request.findById(req.params.requestId)
       if (!request) return res.status(404).send("request not found")
 
       const newRequestComment = new RequestComment({
-        requestComment,
+        requestcomment,
         owner: req.userId,
         requestId: req.params.requestId,
       })
@@ -174,16 +174,16 @@ router.put(
     try {
       const request = await Request.findById(req.params.requestId)
       if (!request) return res.status(404).send("request not found")
-      const { requestComment } = req.body
+      const { requestcomment } = req.body
 
       const requestCommentFound = await RequestComment.findById(req.params.requestCommentId)
-      if (!requestCommentFound) return res.status(404).send("requestComment not found")
+      if (!requestCommentFound) return res.status(404).send("requestcomment not found")
 
       if (requestCommentFound.owner != req.userId) return res.status(403).send("unauthorized action")
 
       const updatedRequestComment = await RequestComment.findByIdAndUpdate(
         req.params.requestCommentId,
-        { $set: { requestComment } },
+        { $set: { requestcomment } },
         { new: true }
       )
 
@@ -205,7 +205,7 @@ router.delete(
       if (!request) return res.status(404).send("request not found")
 
       const requestCommentFound = await RequestComment.findById(req.params.requestCommentId)
-      if (!requestCommentFound) return res.status(404).send("requestComment not found")
+      if (!requestCommentFound) return res.status(404).send("requestcomment not found")
 
       const user = await User.findById(req.userId)
 
@@ -217,7 +217,7 @@ router.delete(
 
       await RequestComment.findByIdAndRemove(req.params.requestCommentId)
 
-      res.send("requestComment is removed")
+      res.send("requestcomment is removed")
     } catch (error) {
       console.log(error)
       res.status(500).send(error.message)
