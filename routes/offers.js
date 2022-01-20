@@ -16,6 +16,7 @@ router.get("/", async (req, res) => {
   const offers = await Offer.find()
     .select("-__v")
     .populate("categorys")
+    .populate("subCategories")
     .populate("owner")
     .populate({
       path: "comments",
