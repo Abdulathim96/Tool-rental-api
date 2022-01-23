@@ -1,7 +1,6 @@
 const express = require("express")
 const checkAdmin = require("../middleware/checkAdmin")
 const checkId = require("../middleware/checkId")
-
 const validateBody = require("../middleware/validateBody")
 const validateId = require("../middleware/validateId")
 const { Category, categoryJoi } = require("../models/Category")

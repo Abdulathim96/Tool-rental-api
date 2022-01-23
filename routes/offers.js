@@ -111,8 +111,7 @@ router.delete("/:id", checkToken, checkId, async (req, res) => {
     const offerfound = await Offer.findById(req.params.id)
     if (!offerfound) return res.status(404).send("offer not found")
 
-    // if (offer.owner != req.userId) return res.status(403).send("unauthorized action")
-    // await Comment.deleteMany({ offerId: req.params.id })
+    
 
     const offer = await Offer.findByIdAndRemove(req.params.id)
     if (!offer) return res.status(404).send("offer not found")

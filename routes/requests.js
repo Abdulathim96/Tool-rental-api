@@ -15,7 +15,6 @@ const router = express.Router()
 router.get("/", async (req, res) => {
   const requests = await Request.find()
     .select("-__v")
-    // .populate("categorys")
     .populate({
       path: "requestcomments",
       populate: {
@@ -29,7 +28,6 @@ router.get("/", async (req, res) => {
 router.get("/:id", checkId, async (req, res) => {
   try {
     const request = await Request.findById(req.params.id)
-      // .populate("categorys")
       .populate({
         path: "requestcomments",
         populate: {
@@ -50,10 +48,7 @@ router.post("/", checkToken, validateBody(requestAddJoi), async (req, res) => {
   try {
     const { title, description, photo, phoneNumber } = req.body
 
-    // const categorysSet = new Set(categorys)
-    // if (categorysSet.size < categorys.length) return res.status(400).send("threr is a duplicated category")
-    // const categorysFound = await Category.find({ _id: { $in: categorys }, type: "Category" })
-    // if (categorysFound.length < categorys.length) return res.status(404).send("some of the categorys is not found")
+    
 
     const request = new Request({
       title,
@@ -80,12 +75,7 @@ router.put("/:id", checkToken, checkId, validateBody(requestEditJoi), async (req
 
     if (requestfound.owner != req.userId) return res.status(403).send("unauthorized action")
 
-    // if (categorys) {
-    //   const categorysSet = new Set(categorys)
-    //   if (categorysSet.size < categorys.length) return res.status(400).send("threr is a duplicated category")
-    //   const categorysFound = await Category.find({ _id: { $in: categorys }, type: "Category" })
-    //   if (categorysFound.length < categorys.length) return res.status(404).send("some of the categorys is not found")
-    // }
+  
 
     const request = await Request.findByIdAndUpdate(
       req.params.id,
@@ -106,8 +96,7 @@ router.delete("/:id", checkToken, checkId, async (req, res) => {
     const requestfound = await Request.findById(req.params.id)
     if (!requestfound) return res.status(404).send("request not found")
 
-    // if (request.owner != req.userId) return res.status(403).send("unauthorized action")
-    // await Comment.deleteMany({ requestId: req.params.id })
+
 
     const request = await Request.findByIdAndRemove(req.params.id)
     if (!request) return res.status(404).send("request not found")
