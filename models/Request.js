@@ -29,7 +29,7 @@ const requestAddJoi = Joi.object({
   description: Joi.string().min(5).max(1000).required(),
   photo: Joi.string().uri().min(5).max(1000).required(),
   phoneNumber: Joi.string().min(10),
-  categorys: Joi.array().items(Joi.objectid()).min(1).required(),
+  // categorys: Joi.array().items(Joi.objectid()).min(1).required(),
 })
 
 const requestEditJoi = Joi.object({
@@ -37,7 +37,7 @@ const requestEditJoi = Joi.object({
   description: Joi.string().min(5).max(1000),
   photo: Joi.string().uri().min(5).max(1000),
   phoneNumber: Joi.string().min(10),  
-  categorys: Joi.array().items(Joi.objectid()).min(1).required(),
+  // categorys: Joi.array().items(Joi.objectid()).min(1).required(),
 
 })
 
